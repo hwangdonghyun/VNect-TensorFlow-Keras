@@ -35,7 +35,6 @@ def locloss(heatmap_gt, y_true, y_pred):
 
 
 #%%Building the VNect model
-
 #ResNet-50 layers of stage 1 to 4f
 #Stage1
 x = layers.ZeroPadding2D(padding=(3, 3))(input_image)
@@ -106,7 +105,7 @@ x = resnet_modules.create_identity_block(x,
                                          stage=4,
                                          block='f')
 
-#%%VNect Custom Layers
+#VNect Custom Layers
 #Stage 5a
 res_5a_2 = layers.Conv2D(512,
                          kernel_size=(1, 1),
