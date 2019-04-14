@@ -20,22 +20,12 @@ class vnect_model(object):
     def sqrt_tensor(self, x):
         return backend.sqrt(x)
 
-    
-    def loc_heatmap_loss(self, y_true, y_pred):
-        hmap_gt = self.heatmap_gt
-    
-        locmap_preds = tf.multiply(hmap_gt, y_pred)  #hadamard product
-        locmap_gt = tf.multiply(hmap_gt, y_true)  #hadamard product
-    
-        loss = tf.keras.losses.mean_squared_error(locmap_gt, locmap_preds)
-        return loss
-    
     def custom_loc_heatmap_loss(self, y_true, y_pred):
-        heatmap_gt = y_true[...,0:self.number_of_joints]
-        loc_heatmap_gt = y_true[...,self.number_of_joints:self.number_of_joints*2]
+        heatmap_gt = y_true[..., 0 : self.number_of_joints]
+        loc_heatmap_gt = y_true[..., self.number_of_joints : self.number_of_joints * 2]
 
-        loc_heatmap_pred_hadamard = tf.multiply(heatmap_gt, loc_heatmap_gt)  #hadamard product
-        loc_heatmap_gt_hadamard = tf.multiply(heatmap_gt, y_true)  #hadamard product
+        loc_heatmap_pred_hadamard = tf.multiply(heatmap_gt, y_pred)  #hadamard product
+        loc_heatmap_gt_hadamard = tf.multiply(heatmap_gt, loc_heatmap_gt)  #hadamard product
         
         loss = tf.keras.losses.mean_squared_error(loc_heatmap_gt_hadamard, loc_heatmap_pred_hadamard)
         
