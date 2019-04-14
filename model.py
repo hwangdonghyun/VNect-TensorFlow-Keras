@@ -139,7 +139,7 @@ class vnect_model(object):
         x = resnet_modules.create_conv_block(x,
                                              3, [256, 256, 1024],
                                              stage=4,
-                                             block='a')  #M
+                                             block='a')
         x = resnet_modules.create_identity_block(x,
                                                  3, [256, 256, 1024],
                                                  stage=4,
