@@ -30,6 +30,6 @@ If you want to train this network, you need to take the following steps:
 		* The data generator should provide the ground truth of the locationmap as well as the ground truth of the 2D heatmap.
 		* Example
 			+ Shape of the ground truth: [42,42,21]
-			+ The ground truth output of the data generator should be [42,42,42]  
+			+ The ground truth output of the data generator should be [42,42,42].  
 			  First 21 channels are for 2D heatmaps and remainings are for location heatmaps.
 			+ The data generator have to provide this type of data for each location heatmaps x, y, z.
