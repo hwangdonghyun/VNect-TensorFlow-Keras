@@ -39,7 +39,8 @@ class vnect_model(object):
 
         input_image = layers.Input((self.input_size, self.input_size, 3))
         x = layers.ZeroPadding2D(padding=(3, 3))(input_image)
-        x = layers.Conv2D(64, (7, 7),
+        x = layers.Conv2D(64, 
+                          kernel_size=(7, 7),
                           strides=2,
                           kernel_initializer='he_normal',
                           name='res_1a')(x)
@@ -112,7 +113,7 @@ class vnect_model(object):
         #Stage 5a
         res_5a_2 = layers.Conv2D(512,
                                  kernel_size=(1, 1),
-                                 padding='same',
+                                 kernel_initializer='he_normal',
                                  name='res_5a_2a')(x)
         res_5a_2 = layers.BatchNormalization(fused=True,
                                              name='bn_5a_2a')(res_5a_2)
@@ -121,6 +122,7 @@ class vnect_model(object):
         res_5a_2 = layers.Conv2D(512,
                                  kernel_size=(3, 3),
                                  padding='same',
+                                 kernel_initializer='he_normal',
                                  name='res_5a_2b')(res_5a_2)
         res_5a_2 = layers.BatchNormalization(fused=True,
                                              name='bn_5a_2b')(res_5a_2)
@@ -128,12 +130,15 @@ class vnect_model(object):
 
         res_5a_2 = layers.Conv2D(1024,
                                  kernel_size=(1, 1),
-                                 padding='same',
+                                 kernel_initializer='he_normal',
                                  name='res_5a_2c')(res_5a_2)
         res_5a_2 = layers.BatchNormalization(fused=True,
                                              name='bn_5a_2c')(res_5a_2)
 
-        res_5a_1 = layers.Conv2D(1024, (1, 1), name='res_5a_1')(x)
+        res_5a_1 = layers.Conv2D(1024, 
+                                 kernel_size=(1, 1), 
+                                 kernel_initializer='he_normal',
+                                 name='res_5a_1')(x)
         res_5a_1 = layers.BatchNormalization(fused=True,
                                              name='bn_5a_1')(res_5a_1)
 
@@ -141,7 +146,9 @@ class vnect_model(object):
         res_5a = layers.Activation('relu')(res_5a)
 
         #Stage 5b
-        res_5b = layers.Conv2D(256, kernel_size=(1, 1),
+        res_5b = layers.Conv2D(256, 
+                               kernel_size=(1, 1),
+                               kernel_initializer='he_normal',
                                name='res_5b_a')(res_5a)
         res_5b = layers.BatchNormalization(fused=True, name='bn_5b_a')(res_5b)
         res_5b = layers.Activation('relu')(res_5b)
@@ -149,11 +156,14 @@ class vnect_model(object):
         res_5b = layers.Conv2D(128,
                                kernel_size=(3, 3),
                                padding='same',
+                               kernel_initializer='he_normal',
                                name='res_5b_b')(res_5b)
         res_5b = layers.BatchNormalization(fused=True, name='bn_5b_b')(res_5b)
         res_5b = layers.Activation('relu')(res_5b)
 
-        res_5b = layers.Conv2D(256, kernel_size=(1, 1),
+        res_5b = layers.Conv2D(256, 
+                               kernel_size=(1, 1),
+                               kernel_initializer='he_normal',
                                name='res_5b_c')(res_5b)
         res_5b = layers.BatchNormalization(fused=True, name='bn_5b_c')(res_5b)
         res_5b = layers.Activation('relu')(res_5b)
@@ -163,6 +173,7 @@ class vnect_model(object):
                                           kernel_size=(4, 4),
                                           strides=(2, 2),
                                           padding="same",
+                                          kernel_initializer='he_normal',
                                           name='res_5c_1')(res_5b)
         res_5c_1 = layers.BatchNormalization(fused=True,
                                              name='bn_5c_1')(res_5c_1)
@@ -172,6 +183,7 @@ class vnect_model(object):
                                           kernel_size=(4, 4),
                                           strides=(2, 2),
                                           padding='same',
+                                          kernel_initializer='he_normal',
                                           name='res_5c_2')(res_5b)
 
         res_5c_2_sqr = layers.Lambda(
@@ -211,6 +223,7 @@ class vnect_model(object):
         res_5c = layers.Conv2D(128,
                                kernel_size=(3, 3),
                                padding='same',
+                               kernel_initializer='he_normal',
                                name='res_5c')(res_5c)
         res_5c = layers.BatchNormalization(fused=True, name='bn_5c')(res_5c)
         res_5c = layers.Activation('relu')(res_5c)
@@ -218,6 +231,7 @@ class vnect_model(object):
         #Featuremaps
         featuremaps = layers.Conv2D(self.number_of_joints * 4,
                                     kernel_size=(1, 1),
+                                    kernel_initializer='he_normal',
                                     name='res_featuremaps')(res_5c)
 
         heatmap_2d = layers.Lambda(self.slice_tensor,
@@ -260,6 +274,7 @@ model = v.create_network()
 ada = tf.keras.optimizers.Adadelta(lr=1.0, rho=0.95, epsilon=1e-08, decay=0.0)
 model.compile(optimizer=ada, loss={'loc_heatmap_x':v.custom_loc_heatmap_loss, 
                                    'loc_heatmap_y':v.custom_loc_heatmap_loss, 
-                                   'loc_heatmap_z':v.custom_loc_heatmap_loss})
+                                   'loc_heatmap_z':v.custom_loc_heatmap_loss,
+                                   'heatmap_2d':'mse'})
     
         
