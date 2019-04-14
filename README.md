@@ -12,7 +12,7 @@ The graph of the network model based on this structure is shown in the [link](./
 
 ## Files
 [model.py](./model.py): The main implementation of the VNect network.  
-[resnet_module.py](./resnet_module.py): The implementation of the ResNet[[site](https://arxiv.org/abs/1512.03385)] blocks used for the VNect implementation.
+[resnet_modules.py](./resnet_modules.py): The implementation of the ResNet[[site](https://arxiv.org/abs/1512.03385)] blocks used for the VNect implementation.
 
 ## Training the Network
 The current implementation provides a loss function for 3D location maps.  
