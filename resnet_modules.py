@@ -8,6 +8,19 @@ def create_conv_block(input_tensor,
                       strides=(2, 2),
                       stage=1,
                       block='a'):
+    """
+    Create a conv block of ResNet-50.
+    
+    Args:
+        input_tensor (tensor): An input tensor.
+        kernel_size (size): Kernel size of a second conv layer.
+        num_of_filters_list (list): A List of number of filters.
+        strides (size): strides for first and skip connection layers.
+        stage (int): stage number for layer naming.        
+        block (str): block string for layer naming.
+    Return:
+        x: A network tensor which a convolution block has been added.
+    """
     
     conv_name_str = 'res_' + str(stage) + block + "_"
     bn_name_str = 'bn_' + str(stage) + block + "_"
@@ -53,7 +66,18 @@ def create_identity_block(input_tensor,
                           num_of_filters_list,
                           stage=1,
                           block='a'):
+    """
+    Create a identity block of ResNet-50.
     
+    Args:
+        input_tensor (tensor): An input tensor.
+        kernel_size (size): Kernel size of a second conv layer.
+        num_of_filters_list (list): A List of number of filters.
+        stage (int): stage number for layer naming.        
+        block (str): block string for layer naming.
+    Return:
+        x: A network tensor which an identity block has been added.
+    """
     conv_name_str = 'res_' + str(stage) + block + "_"
     bn_name_str = 'bn_' + str(stage) + block + "_"
 
