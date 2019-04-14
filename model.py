@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 #%%Import libraries
-import resnet_modules
+import tensorflow as tf
 from tensorflow.keras import layers, models, backend
-
+import resnet_modules
 
 class vnect_model(object):
     def __init__(self, input_size=368, number_of_joints=21):
@@ -20,18 +20,29 @@ class vnect_model(object):
     def sqrt_tensor(self, x):
         return backend.sqrt(x)
 
-    '''    
-    def locloss(heatmap_gt, y_true, y_pred):
-        hmap_gt = heatmap_gt
+    
+    def loc_heatmap_loss(self, y_true, y_pred):
+        hmap_gt = self.heatmap_gt
     
         locmap_preds = tf.multiply(hmap_gt, y_pred)  #hadamard product
-        locmap_gt = tf.multiply(hmap_gt, y_true)
+        locmap_gt = tf.multiply(hmap_gt, y_true)  #hadamard product
     
         loss = tf.keras.losses.mean_squared_error(locmap_gt, locmap_preds)
         return loss
-    '''
+    
+    def custom_loc_heatmap_loss(self, y_true, y_pred):
+        heatmap_gt = y_true[...,0:self.number_of_joints]
+        loc_heatmap_gt = y_true[...,self.number_of_joints:self.number_of_joints*2]
 
-    def _create_network(self):
+        loc_heatmap_pred_hadamard = tf.multiply(heatmap_gt, loc_heatmap_gt)  #hadamard product
+        loc_heatmap_gt_hadamard = tf.multiply(heatmap_gt, y_true)  #hadamard product
+        
+        loss = tf.keras.losses.mean_squared_error(loc_heatmap_gt_hadamard, loc_heatmap_pred_hadamard)
+        
+        return loss
+        
+        
+    def create_network(self):
         #Building the VNect model
         #ResNet-50 layers of stage 1 to 4f
         #Stage1
@@ -248,10 +259,17 @@ class vnect_model(object):
             inputs=[input_image],
             outputs=[heatmap_2d, loc_heatmap_x, loc_heatmap_y, loc_heatmap_z])
         m.summary()
+    
         return m
 
 #%%
         
 v = vnect_model(368, 21)
-model = v._create_network()
-print(model)
+model = v.create_network()
+
+ada = tf.keras.optimizers.Adadelta(lr=1.0, rho=0.95, epsilon=1e-08, decay=0.0)
+model.compile(optimizer=ada, loss={'loc_heatmap_x':v.custom_loc_heatmap_loss, 
+                                   'loc_heatmap_y':v.custom_loc_heatmap_loss, 
+                                   'loc_heatmap_z':v.custom_loc_heatmap_loss})
+    
+        
