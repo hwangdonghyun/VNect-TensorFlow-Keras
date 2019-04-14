@@ -16,7 +16,7 @@ The graph of the network model based on this structure is shown in the [link](./
 
 ## Training the Network
 The current implementation provides a loss function for 3D location maps.  
-It has no specific code for training and will be updated later.
+It has no specific code for training the network and will be updated later.
 
 If you want to train this network, you need to take the following steps:  
 1. Train the 2D heatmap estimation.
