@@ -306,7 +306,7 @@ class vnect_model(object):
                                                     self.number_of_joints),
                                                     name='loc_heatmap_z')(featuremaps)
         
-        #Create and return the model.
+        #Create and return the model instance.
         m = models.Model(
             inputs=[input_image],
             outputs=[heatmap_2d, loc_heatmap_x, loc_heatmap_y, loc_heatmap_z])
