@@ -1,6 +1,6 @@
 # VNect-TensorFlow-Keras
 
-This is an unofficial implementation of a VNect model with TF-Keras referring to **"VNect: Real-time 3D Human Pose Estimation with a Single RGB Camera"** paper in SIGGRAPH`17.  [[site](http://gvv.mpi-inf.mpg.de/projects/VNect/)]
+This is an unofficial implementation of a VNect model with TF-Keras referring to **"VNect: Real-time 3D Human Pose Estimation with a Single RGB Camera"** paper in SIGGRAPH'17.  [[site](http://gvv.mpi-inf.mpg.de/projects/VNect/)]
  
 ## Network Structure
 
