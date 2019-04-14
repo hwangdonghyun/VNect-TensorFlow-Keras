@@ -6,34 +6,86 @@ from tensorflow.keras import layers, models, backend
 import resnet_modules
 
 class vnect_model(object):
+#A class which creates vnect model.
+
     def __init__(self, input_size=368, number_of_joints=21):
+        """
+        Initialize a class instance.
+        
+        Args:
+            input_size (int): Size of input_image. Default is 368.
+            number_of_joints (int): Number of joints of the target dataset. Default is 21.
+        """
         self.number_of_joints = number_of_joints
         self.input_size = input_size
-        self.eight_of_input_size = int(input_size / 8)
+        self.eight_of_input_size = int(input_size / 8) #eight of the input image's size.
 
     def slice_tensor(self, x, k):
+        """
+        Slice an input tensor.
+        
+        Args:
+            x (tensor): An input tensor.
+            k (int): Slice position.
+            
+        Return:
+            Sliced tensor.
+        """
         return x[..., k:k + self.number_of_joints]
 
     def square_tensor(self, x):
+        """
+        Compute a square of an input tensor.
+        
+        Args:
+            x (tensor): An input tensor.
+            
+        Return:
+            Squared tensor.
+        """
         return backend.square(x)
 
     def sqrt_tensor(self, x):
+        """
+        Compute a square root of an input tensor.
+        
+        Args:
+            x (tensor): An input tensor.
+            
+        Return:
+            Square-rooted tensor.
+        """
         return backend.sqrt(x)
 
     def custom_loc_heatmap_loss(self, y_true, y_pred):
+        """
+        A custom function to calculate a location heatmaps' loss described in the VNect paper.
+        
+        Args:
+            y_pred (tensor): A tensor of location heatmaps predicted by the network.
+            y_true (tensor): A tensor which combines ground truth of 2D heatmaps with ground truth of location heatmaps.
+        Return:
+            A L2 loss value.
+        """
         heatmap_gt = y_true[..., 0 : self.number_of_joints]
         loc_heatmap_gt = y_true[..., self.number_of_joints : self.number_of_joints * 2]
 
-        loc_heatmap_pred_hadamard = tf.multiply(heatmap_gt, y_pred)  #hadamard product
-        loc_heatmap_gt_hadamard = tf.multiply(heatmap_gt, loc_heatmap_gt)  #hadamard product
+        loc_heatmap_pred_hadamard = tf.multiply(heatmap_gt, y_pred)  #A hadamard product tensor of predicted one.
+        loc_heatmap_gt_hadamard = tf.multiply(heatmap_gt, loc_heatmap_gt)  #A hadamard product tensor of GT.
         
         loss = tf.keras.losses.mean_squared_error(loc_heatmap_gt_hadamard, loc_heatmap_pred_hadamard)
         
         return loss
         
-        
     def create_network(self):
-        #Building the VNect model
+        """
+        Function to create a VNect model based on tensorflow.keras API.
+        
+        Return:
+            VNect model instance.
+        """
+        
+        
         #ResNet-50 layers of stage 1 to 4f
         #Stage1
 
@@ -185,7 +237,9 @@ class vnect_model(object):
                                           padding='same',
                                           kernel_initializer='he_normal',
                                           name='res_5c_2')(res_5b)
-
+        res_5c_2 = layers.BatchNormalization(fused=True,
+                                             name='bn_5c_2')(res_5c_2)
+        
         res_5c_2_sqr = layers.Lambda(
             self.square_tensor,
             output_shape=(self.eight_of_input_size, self.eight_of_input_size,
@@ -205,14 +259,7 @@ class vnect_model(object):
             arguments={'k': int(self.number_of_joints * 2)},
             output_shape=(self.eight_of_input_size, self.eight_of_input_size,
                           self.number_of_joints))(res_5c_2_sqr)
-        '''
-        delta_x_sqr = layers.Lambda(square_tensor,
-                                output_shape=(92, 92, self.number_of_joints))(delta_x)
-        delta_y_sqr = layers.Lambda(square_tensor,
-                                output_shape=(92, 92, self.number_of_joints))(delta_y)
-        delta_z_sqr = layers.Lambda(square_tensor,
-                                output_shape=(92, 92, self.number_of_joints))(delta_z)
-        '''
+        
         bone_length_sqr = layers.Add()([delta_x_sqr, delta_y_sqr, delta_z_sqr])
         bone_length = layers.Lambda(
             self.sqrt_tensor,
@@ -236,45 +283,48 @@ class vnect_model(object):
 
         heatmap_2d = layers.Lambda(self.slice_tensor,
                                    arguments={'k': int(0)},
-                                   output_shape=(self.eight_of_input_size,
+                                   output_shape=(self.eight_of_input_size, 
                                                  self.eight_of_input_size,
                                                  self.number_of_joints),
-                                   name='heatmap_2d')(featuremaps)
-        loc_heatmap_x = layers.Lambda(
-            self.slice_tensor,
-            arguments={'k': int(self.number_of_joints)},
-            output_shape=(self.eight_of_input_size, self.eight_of_input_size,
-                          self.number_of_joints),
-            name='loc_heatmap_x')(featuremaps)
-        loc_heatmap_y = layers.Lambda(
-            self.slice_tensor,
-            arguments={'k': int(self.number_of_joints * 2)},
-            output_shape=(self.eight_of_input_size, self.eight_of_input_size,
-                          self.number_of_joints),
-            name='loc_heatmap_y')(featuremaps)
-        loc_heatmap_z = layers.Lambda(
-            self.slice_tensor,
-            arguments={'k': int(self.number_of_joints * 3)},
-            output_shape=(self.eight_of_input_size, self.eight_of_input_size,
-                          self.number_of_joints),
-            name='loc_heatmap_z')(featuremaps)
-
+                                                 name='heatmap_2d')(featuremaps)
+        loc_heatmap_x = layers.Lambda(self.slice_tensor,
+                                      arguments={'k': int(self.number_of_joints)},
+                                      output_shape=(self.eight_of_input_size, 
+                                                    self.eight_of_input_size,
+                                                    self.number_of_joints),
+                                                    name='loc_heatmap_x')(featuremaps)
+        loc_heatmap_y = layers.Lambda(self.slice_tensor,
+                                      arguments={'k': int(self.number_of_joints * 2)},
+                                      output_shape=(self.eight_of_input_size, 
+                                                    self.eight_of_input_size,
+                                                    self.number_of_joints),
+                                                    name='loc_heatmap_y')(featuremaps)
+        loc_heatmap_z = layers.Lambda(self.slice_tensor,
+                                      arguments={'k': int(self.number_of_joints * 3)},
+                                      output_shape=(self.eight_of_input_size, 
+                                                    self.eight_of_input_size,
+                                                    self.number_of_joints),
+                                                    name='loc_heatmap_z')(featuremaps)
+        
+        #Create and return the model.
         m = models.Model(
             inputs=[input_image],
             outputs=[heatmap_2d, loc_heatmap_x, loc_heatmap_y, loc_heatmap_z])
         m.summary()
-    
+          
         return m
 
-#%%
-        
-v = vnect_model(368, 21)
-model = v.create_network()
 
-ada = tf.keras.optimizers.Adadelta(lr=1.0, rho=0.95, epsilon=1e-08, decay=0.0)
-model.compile(optimizer=ada, loss={'loc_heatmap_x':v.custom_loc_heatmap_loss, 
-                                   'loc_heatmap_y':v.custom_loc_heatmap_loss, 
-                                   'loc_heatmap_z':v.custom_loc_heatmap_loss,
-                                   'heatmap_2d':'mse'})
+if __name__ == "__main__":      
+    #An example of how to use the vnect_model class.
+    vnect_instance = vnect_model(368, 21)
+    vnect_model = vnect_instance.create_network()
     
+    opt = tf.keras.optimizers.Adadelta(lr=1.0, rho=0.95, epsilon=1e-08, decay=0.0)
+    vnect_model.compile(optimizer=opt, loss={'loc_heatmap_x':vnect_instance.custom_loc_heatmap_loss, 
+                                       'loc_heatmap_y':vnect_instance.custom_loc_heatmap_loss, 
+                                       'loc_heatmap_z':vnect_instance.custom_loc_heatmap_loss,
+                                       })
+    #It is assumed that heatmap_2d is pre-trained.
+        
         

@@ -21,7 +21,7 @@ def create_conv_block(input_tensor,
     x = layers.Activation('relu')(x)
 
     x = layers.Conv2D(num_of_filters_list[1],
-                      kernel_size,
+                      kernel_size=kernel_size,
                       padding='same',
                       kernel_initializer='he_normal',
                       name=conv_name_str + '2b')(x)
@@ -65,7 +65,7 @@ def create_identity_block(input_tensor,
     x = layers.Activation('relu')(x)
 
     x = layers.Conv2D(num_of_filters_list[1],
-                      kernel_size,
+                      kernel_size=kernel_size,
                       padding='same',
                       kernel_initializer='he_normal',
                       name=conv_name_str + '2b')(x)
